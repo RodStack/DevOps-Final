@@ -20,7 +20,6 @@ resource "aws_security_group" "app" {
   description = "Security group for app servers"
   vpc_id      = aws_vpc.main.id
 
-  # Permitir tráfico HTTP
   ingress {
     from_port   = 80
     to_port     = 80
@@ -29,7 +28,6 @@ resource "aws_security_group" "app" {
     description = "Allow HTTP traffic"
   }
 
-  # Permitir SSH
   ingress {
     from_port   = 22
     to_port     = 22
@@ -38,7 +36,6 @@ resource "aws_security_group" "app" {
     description = "Allow SSH access"
   }
 
-  # Permitir todo el tráfico saliente
   egress {
     from_port   = 0
     to_port     = 0
@@ -64,30 +61,18 @@ resource "aws_instance" "app" {
   
   user_data = <<-EOF
               #!/bin/bash
-              # Actualizar el sistema
               yum update -y
-
-              # Instalar Node.js
               curl -sL https://rpm.nodesource.com/setup_14.x | bash -
               yum install -y nodejs
-
-              # Crear directorio de la aplicación
               mkdir -p /app
-              
-              # Crear archivo app.js
               cat > /app/app.js << 'EOL'
               const express = require('express');
               const app = express();
               const port = 80;
-
               app.use(express.json());
-
-              // Ruta de salud
               app.get('/health', (req, res) => {
                   res.status(200).json({ status: 'ok', message: 'API is running' });
               });
-
-              // Información de la API
               app.get('/api/info', (req, res) => {
                   res.json({
                       service: 'Demo API',
@@ -95,20 +80,16 @@ resource "aws_instance" "app" {
                       timestamp: new Date()
                   });
               });
-
-              // Endpoint de ejemplo
               app.get('/api/hello', (req, res) => {
                   res.json({
                       message: 'Hello, DevOps!'
                   });
               });
-
               app.listen(port, () => {
                   console.log('API running on port ' + port);
               });
               EOL
 
-              # Crear package.json
               cat > /app/package.json << 'EOL'
               {
                 "name": "simple-api",
@@ -124,7 +105,6 @@ resource "aws_instance" "app" {
               }
               EOL
 
-              # Crear servicio systemd para la aplicación
               cat > /etc/systemd/system/node-app.service << 'EOL'
               [Unit]
               Description=Node.js API Application
@@ -141,11 +121,8 @@ resource "aws_instance" "app" {
               WantedBy=multi-user.target
               EOL
 
-              # Instalar dependencias
               cd /app
               npm install
-
-              # Habilitar e iniciar el servicio
               systemctl enable node-app
               systemctl start node-app
               EOF
@@ -163,15 +140,4 @@ resource "aws_instance" "app" {
   depends_on = [
     aws_internet_gateway.main
   ]
-}
-
-# Outputs
-output "instance_public_ip" {
-  value = aws_instance.app.public_ip
-  description = "Public IP of the EC2 instance"
-}
-
-output "instance_public_dns" {
-  value = aws_instance.app.public_dns
-  description = "Public DNS of the EC2 instance"
 }
