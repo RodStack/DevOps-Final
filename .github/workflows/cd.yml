@@ -43,12 +43,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Install dependencies
+        working-directory: ./app
+        run: npm install
+      
       - name: Run Snyk scan
+        working-directory: ./app  # Especificamos el directorio de trabajo
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: monitor
+          args: --all-projects
 
   deploy:
     needs: security
