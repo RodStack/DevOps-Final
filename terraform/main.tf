@@ -1,11 +1,7 @@
 provider "aws" {
-  region     = var.aws_region
-  access_key = var.aws_access_key
-  secret_key = var.aws_secret_key
+  region = var.aws_region
 }
 
-resource "aws_ecr_repository" "app_repo" {
-  name = var.ecr_repository_name
+data "aws_availability_zones" "available" {
+  state = "available"
 }
-
-# Aquí irían más recursos de AWS según necesites

@@ -1,12 +1,12 @@
 {
-    "name": "devops-app",
+    "name": "simple-api",
     "version": "1.0.0",
-    "description": "DevOps Demo Application",
+    "description": "Simple API for DevOps demo",
     "main": "app.js",
     "scripts": {
       "start": "node app.js",
-      "test": "echo \"No tests specified\" && exit 0",
-      "lint": "echo \"No linting configured\" && exit 0"
+      "test": "echo \"Warning: No tests specified\" && exit 0",
+      "lint": "echo \"Warning: No linting configured\" && exit 0"
     },
     "dependencies": {
       "express": "^4.18.2"
