@@ -1,24 +1,28 @@
-name: Monitoring
+# name: Monitoring
 
-on:
-  schedule:
-    - cron: '*/30 * * * *'  # Cada 30 minutos
+# on:
+#   schedule:
+#     - cron: '*/30 * * * *'  # Ejecutar cada 30 minutos
 
-jobs:
-  health-check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check application health
-        run: |
-          curl -f ${{ secrets.APP_HEALTH_URL }} || exit 1
+# jobs:
+#   health-check:
+#     runs-on: ubuntu-latest  # Usar un entorno Ubuntu más reciente
+#     steps:
+#       - name: Check application health  # Verificar la salud de la aplicación
+#         run: |
+#           # Realiza una solicitud HTTP a la URL de salud de la aplicación
+#           # Si la solicitud falla (no devuelve código 2xx), el script sale con un código de error
+#           curl -f ${{ secrets.APP_HEALTH_URL }} || exit 1
 
-  notify:
-    needs: health-check
-    if: failure()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Send notification
-        uses: aws-actions/aws-sns-publish-action@v1
-        with:
-          topic-arn: ${{ secrets.SNS_TOPIC_ARN }}
-          message: "Application health check failed"
+#   notify:
+#     needs: health-check  # Este trabajo depende del éxito del trabajo anterior
+#     if: failure()  # Se ejecutará solo si el trabajo de health-check falla
+#     runs-on: ubuntu-latest  # Usar un entorno Ubuntu más reciente
+#     steps:
+#       - name: Send notification  # Enviar notificación
+#         uses: aws-actions/aws-sns-publish-action@v1  # Acción para publicar mensajes en un tema de SNS de AWS
+#         with:
+#           # ARN del tema de SNS al que se enviará la notificación
+#           topic-arn: ${{ secrets.SNS_TOPIC_ARN }}
+#           # Mensaje a enviar si falla la verificación de salud
+#           message: "Application health check failed"
