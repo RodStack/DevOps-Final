@@ -15,17 +15,14 @@ Implementación de infraestructura en AWS usando **Terraform** y **GitHub Action
 ### Configuración de Secretos en GitHub
 1. Ir a **Settings > Secrets and variables > Actions**.
 2. Configurar los **Secrets**:
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-ECR_REPOSITORY
-SNYK_TOKEN
-TF_API_TOKEN
+-AWS_SECRET_ACCESS_KEY
+-AWS_ACCESS_KEY_ID
+-ECR_REPOSITORY
+-SNYK_TOKEN
+-TF_API_TOKEN
 3. Configurar Variable
-AWS_REGION
+-AWS_REGION
 
-
-markdown
-Copiar código
 ## Recursos AWS Creados
 
 - **VPC** con subnet pública.
