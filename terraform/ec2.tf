@@ -1,3 +1,4 @@
+# Data source para obtener la AMI más reciente de Amazon Linux 2
 data "aws_ami" "amazon_linux_2" {
   most_recent = true
   owners      = ["amazon"]
@@ -13,11 +14,13 @@ data "aws_ami" "amazon_linux_2" {
   }
 }
 
+# Grupo de seguridad para la instancia EC2
 resource "aws_security_group" "app" {
   name        = "app-sg"
   description = "Security group for app servers"
   vpc_id      = aws_vpc.main.id
 
+  # Permitir tráfico HTTP
   ingress {
     from_port   = 80
     to_port     = 80
@@ -26,6 +29,7 @@ resource "aws_security_group" "app" {
     description = "Allow HTTP traffic"
   }
 
+  # Permitir SSH
   ingress {
     from_port   = 22
     to_port     = 22
@@ -34,6 +38,7 @@ resource "aws_security_group" "app" {
     description = "Allow SSH access"
   }
 
+  # Permitir todo el tráfico saliente
   egress {
     from_port   = 0
     to_port     = 0
@@ -48,11 +53,12 @@ resource "aws_security_group" "app" {
   }
 }
 
+# Instancia EC2
 resource "aws_instance" "app" {
-  ami           = data.aws_ami.amazon_linux_2.id
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.public.id
-  key_name      = var.key_name
+  ami                    = data.aws_ami.amazon_linux_2.id
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.public.id
+  key_name               = var.key_name
 
   vpc_security_group_ids = [aws_security_group.app.id]
   
@@ -76,10 +82,12 @@ resource "aws_instance" "app" {
 
               app.use(express.json());
 
+              // Ruta de salud
               app.get('/health', (req, res) => {
                   res.status(200).json({ status: 'ok', message: 'API is running' });
               });
 
+              // Información de la API
               app.get('/api/info', (req, res) => {
                   res.json({
                       service: 'Demo API',
@@ -88,6 +96,7 @@ resource "aws_instance" "app" {
                   });
               });
 
+              // Endpoint de ejemplo
               app.get('/api/hello', (req, res) => {
                   res.json({
                       message: 'Hello, DevOps!'
@@ -95,7 +104,7 @@ resource "aws_instance" "app" {
               });
 
               app.listen(port, () => {
-                  console.log(`API running on port ${port}`);
+                  console.log('API running on port ' + port);
               });
               EOL
 
@@ -115,10 +124,30 @@ resource "aws_instance" "app" {
               }
               EOL
 
-              # Instalar dependencias y ejecutar la aplicación
+              # Crear servicio systemd para la aplicación
+              cat > /etc/systemd/system/node-app.service << 'EOL'
+              [Unit]
+              Description=Node.js API Application
+              After=network.target
+
+              [Service]
+              Type=simple
+              User=root
+              WorkingDirectory=/app
+              ExecStart=/usr/bin/node app.js
+              Restart=on-failure
+
+              [Install]
+              WantedBy=multi-user.target
+              EOL
+
+              # Instalar dependencias
               cd /app
               npm install
-              npm start &
+
+              # Habilitar e iniciar el servicio
+              systemctl enable node-app
+              systemctl start node-app
               EOF
 
   root_block_device {
@@ -134,4 +163,15 @@ resource "aws_instance" "app" {
   depends_on = [
     aws_internet_gateway.main
   ]
+}
+
+# Outputs
+output "instance_public_ip" {
+  value = aws_instance.app.public_ip
+  description = "Public IP of the EC2 instance"
+}
+
+output "instance_public_dns" {
+  value = aws_instance.app.public_dns
+  description = "Public DNS of the EC2 instance"
 }
