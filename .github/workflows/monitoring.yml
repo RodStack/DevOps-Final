@@ -1,0 +1,24 @@
+name: Monitoring
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Cada 30 minutos
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check application health
+        run: |
+          curl -f ${{ secrets.APP_HEALTH_URL }} || exit 1
+
+  notify:
+    needs: health-check
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send notification
+        uses: aws-actions/aws-sns-publish-action@v1
+        with:
+          topic-arn: ${{ secrets.SNS_TOPIC_ARN }}
+          message: "Application health check failed"
